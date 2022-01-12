@@ -31,44 +31,27 @@ USE `tasksdb`;
 --
 
 CREATE TABLE `tbltasks` (
-  `id` bigint(20) NOT NULL COMMENT 'Task ID - Primary Key',
+  `id` bigint(20) NOT NULL COMMENT 'Task ID Number - Primary Key',
   `title` varchar(255) NOT NULL COMMENT 'Task Title',
   `description` mediumtext COMMENT 'Task Description',
-  `deadline` datetime DEFAULT NULL COMMENT 'Task Deadline Date',
-  `completed` enum('Y','N') NOT NULL DEFAULT 'N' COMMENT 'Task Completion Status'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Tasks table';
+  `deadline` datetime DEFAULT NULL COMMENT 'Task Deadline',
+  `completed` enum('N','Y') NOT NULL DEFAULT 'N' COMMENT 'Task Complete'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Table to store to do tasks';
 
---
--- Dumping data for table `tbltasks`
---
-
-INSERT DELAYED INTO `tbltasks` (`id`, `title`, `description`, `deadline`, `completed`) VALUES
-(2, 'Task 2', 'description 2', '2021-07-16 13:30:13', 'N'),
-(3, 'Task 3', 'description 3', '2021-06-10 18:01:55', 'Y'),
-(4, 'Task 4', 'description 4', '2021-06-19 18:01:55', 'N'),
-(5, 'Task 5', 'description 5', NULL, 'Y'),
-(6, 'Task 6', 'description 6', '2021-06-19 10:02:52', 'N');
-
---
--- Indexes for dumped tables
---
+-- --------------------------------------------------------
 
 --
 -- Indexes for table `tbltasks`
 --
 ALTER TABLE `tbltasks`
-  ADD PRIMARY KEY (`id`);
-
---
--- AUTO_INCREMENT for dumped tables
---
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `completed` (`completed`);
 
 --
 -- AUTO_INCREMENT for table `tbltasks`
 --
 ALTER TABLE `tbltasks`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Task ID - Primary Key', AUTO_INCREMENT=7;
-COMMIT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Task ID Number - Primary Key';
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

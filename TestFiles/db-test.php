@@ -1,7 +1,5 @@
 <?php
 
-// RESPONSE TEST = I don't need this file
-
 require_once('db.php');
 require_once('../model/Response.php');
 

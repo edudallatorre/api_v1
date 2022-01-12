@@ -1,19 +1,7 @@
 <?php
-/**
- *
- * TASKS - V1 MODEL
- * ======================
- *
- * This is the class Taks file.
- *
- * @package     api_v1
- * @subpackage  v1\model
- * @copyright   Copyright (c) 2021 - api_v1.
- * @author      Eduardo Dalla Torre <eduardodallatorre.io@gmail.com>
- * @link        http://localhost/
- * @version     v1
- */
+// Task Model Object
 
+// empty TaskException class so we can catch task errors
 class TaskException extends Exception { }
 
 class Task {

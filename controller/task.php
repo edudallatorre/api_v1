@@ -8,7 +8,7 @@ try {
 	$writeDB = DB::connectWriteDB();
 	$readDB = DB::connectReadDB();
 }
-catch(PDOException $ex) {
+catch (PDOException $ex) {
 	error_log("Connection error -" .$ex, 0);
 	$response = new Response();
 	$response->setHttpStatusCode(500);
@@ -18,12 +18,11 @@ catch(PDOException $ex) {
 	exit();
 }
 
-// /task.php?taskid=1
-if(array_key_exists("taskid", $_GET)) {
+if (array_key_exists("taskid", $_GET)) {
 
 	$taskid = $_GET['taskid'];
 
-	if($taskid == '' || !is_numeric($taskid)) {
+	if ($taskid == '' || !is_numeric($taskid)) {
 		$response = new Response();
 		$response->setHttpStatusCode(400);
 		$response->setSuccess(false);
@@ -32,10 +31,9 @@ if(array_key_exists("taskid", $_GET)) {
 		exit;
 	}
 
-	if($_SERVER['REQUEST_METHOD'] === 'GET') {
+	if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
 		try {
-			// Checking the variable undefined = $readDB
 			$query = $readDB->prepare('select id, title, description, DATE_FORMAT(deadline, "%d/%m/%Y %H:%i") as deadline, completed from tbltasks where id = :taskid');
 			$query->bindParam(':taskid', $taskid, PDO::PARAM_INT);
 			$query->execute();
@@ -51,7 +49,7 @@ if(array_key_exists("taskid", $_GET)) {
 				exit;
 			}
 
-			while($row = $query->fetch(PDO::FETCH_ASSOC)) {
+			while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
 				$task = new Task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
 				$taskArray[] = $task->returnTaskAsArray();
 			}
@@ -69,7 +67,7 @@ if(array_key_exists("taskid", $_GET)) {
 			exit;
 		}
 
-		catch(TaskException $ex) {
+		catch (TaskException $ex) {
 			$response = new Response();
 			$response->setHttpStatusCode(500);
 			$response->setSuccess(false);
@@ -78,7 +76,7 @@ if(array_key_exists("taskid", $_GET)) {
 			exit;
 		}
 
-		catch(PDOException $ex) {
+		catch (PDOException $ex) {
 			error_log("Database query error -" .$ex, 0);
 			$response = new Response();
 			$response->setHttpStatusCode(500);
@@ -89,7 +87,7 @@ if(array_key_exists("taskid", $_GET)) {
 		}
 
 	}
-	elseif($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+	elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
 
 		try {
 
@@ -99,7 +97,7 @@ if(array_key_exists("taskid", $_GET)) {
 
 			$rowCount = $query->rowCount();
 
-			if($rowCount === 0) {
+			if ($rowCount === 0) {
 				$response = new Response();
 				$response->setHttpStatusCode(404);
 				$response->setSuccess(false);
@@ -115,7 +113,7 @@ if(array_key_exists("taskid", $_GET)) {
 			$response->send();
 			exit;
 		}
-		catch(PDOException $ex) {
+		catch (PDOException $ex) {
 			$response = new Response();
 			$response->setHttpStatusCode(500);
 			$response->setSuccess(false);
@@ -125,7 +123,7 @@ if(array_key_exists("taskid", $_GET)) {
 		}
 
 	}
-	elseif($_SERVER['REQUEST_METHOD'] === 'PATCH') {
+	elseif ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
 	}
 	else {
 		$response = new Response();
@@ -136,24 +134,24 @@ if(array_key_exists("taskid", $_GET)) {
 		exit;
 	}
 }
-elseif(array_key_exists("completed", $_GET)) {
+elseif (array_key_exists("completed", $_GET)) {
 
 	$completed = $_GET['completed'];
 
-	if($completed !== 'Y' && $completed !== 'N') {
+	if ($completed !== "Y" && $completed !== "N") {
 		$response = new Response();
 		$response->setHttpStatusCode(400);
 		$response->setSuccess(false);
-		$response->addMessage("Complete filter must be Y or N");
+		$response->addMessage("Completed filter must be Y or N");
 		$response->send();
 		exit;
 	}
 
-	if($_SERVER['REQUEST_METHOD'] === 'GET') {
+	if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
 		try {
 
-			$query = $readDB->prepare('select id, title, description, DATE_FORMAT(deadline, "%d/%m/%Y %H:%i" ) as deadline, completed from tbltasks where completed = :completed');
+			$query = $readDB->prepare('SELECT id, title, description, DATE_FORMAT(deadline, "%d/%m/%Y %H:%i") as deadline, completed from tbltasks where completed like :completed');
 			$query->bindParam(':completed', $completed, PDO::PARAM_STR);
 			$query->execute();
 
@@ -161,7 +159,7 @@ elseif(array_key_exists("completed", $_GET)) {
 
 			$taskArray = array();
 
-			while($row = $query->fetch(PDO::FETCH_ASSOC)) {
+			while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
 
 				$task = new Task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
 				$taskArray[] = $task->returnTaskAsArray();
@@ -179,7 +177,7 @@ elseif(array_key_exists("completed", $_GET)) {
 			$response->send();
 			exit;
 		}
-		catch(PDOException $ex) {
+		catch (TaskException $ex) {
 			$response = new Response();
 			$response->setHttpStatusCode(500);
 			$response->setSuccess(false);
@@ -187,16 +185,15 @@ elseif(array_key_exists("completed", $_GET)) {
 			$response->send();
 			exit;
 		}
-		catch(PDOException $ex) {
-			error_log("Database query error -".$ex, 0);
+		catch (PDOException $ex) {
+			error_log("Database Query Error: ".$ex, 0);
 			$response = new Response();
 			$response->setHttpStatusCode(500);
 			$response->setSuccess(false);
-			$response->addMessage($ex->getMessage());
+			$response->addMessage("Failed to get task");
 			$response->send();
 			exit;
 		}
-
 	}
 	else {
 		$response = new Response();
@@ -206,15 +203,14 @@ elseif(array_key_exists("completed", $_GET)) {
 		$response->send();
 		exit;
 	}
-
 }
-elseif(array_key_exists("page", $_GET)) {
+elseif (array_key_exists("page", $_GET)) {
 
-	if($_SERVER['REQUEST_METHOD'] === 'GET') {
+	if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
 		$page = $_GET['page'];
 
-		if($page == '' || !is_numeric($page)) {
+		if ($page == '' || !is_numeric($page)) {
 			$response = new Response();
 			$response->setHttpStatusCode(400);
 			$response->setSuccess(false);
@@ -234,11 +230,11 @@ elseif(array_key_exists("page", $_GET)) {
 
 			$numOfPages = ceil($tasksCount/$limitPerPage);
 
-			if($numOfPages == 0) {
+			if ($numOfPages == 0) {
 				$numOfPages = 1;
 			}
 
-			if($page > $numOfPages || $page == 0) {
+			if ($page > $numOfPages || $page == 0) {
 				$response = new Response();
 				$response->setHttpStatusCode(404);
 				$response->setSuccess(false);
@@ -258,7 +254,7 @@ elseif(array_key_exists("page", $_GET)) {
 
 			$taskArray = array();
 
-			while($row = $query->fetch(PDO::FETCH_ASSOC)) {
+			while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
 				$task = new Task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
 
 				$taskArray[] = $task->returnTaskAsArray();
@@ -281,7 +277,7 @@ elseif(array_key_exists("page", $_GET)) {
 			}
 
 		}
-		catch(TaskException $ex) {
+		catch (TaskException $ex) {
 			$response = new Response();
 			$response->setHttpStatusCode(500);
 			$response->setSuccess(false);
@@ -289,7 +285,7 @@ elseif(array_key_exists("page", $_GET)) {
 			$response->send();
 			exit;
 		}
-		catch(PDOException $ex) {
+		catch (PDOException $ex) {
 			error_log("Database query error - " . $ex, 0);
 			$response = new Response();
 			$response->setHttpStatusCode(500);
@@ -309,9 +305,9 @@ elseif(array_key_exists("page", $_GET)) {
 		exit;
 	}
 }
-elseif(empty($_GET)) {
+elseif (empty($_GET)) {
 
-	if($_SERVER['REQUEST_METHOD'] === 'GET') {
+	if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
 		try {
 			
@@ -322,7 +318,7 @@ elseif(empty($_GET)) {
 
 			$taskArray = array();
 
-			while($row = $query->fetch(PDO::FETCH_ASSOC)) {
+			while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
 
 				$task = new Task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
 				$taskArray[] = $task->returnTaskAsArray();
@@ -359,22 +355,23 @@ elseif(empty($_GET)) {
 		}
 
 	}
-	elseif($_SERVER['REQUEST_METHOD'] === 'POST') {
+	elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 		try {
 
-			if($_SERVER['CONTENT_TYPE'] !== 'application/json') {
+			if ($_SERVER['CONTENT_TYPE'] !== 'application/json') {
 				$response = new Response();
 				$response->setHttpStatusCode(400);
 				$response->setSuccess(false);
-				$response->addMessage("Content type header is not set to JSON");
+				$response->addMessage("Content Type header not set to JSON");
 				$response->send();
 				exit;
 			}
 
-			$rawPOSTData = file_get_contents('php://input');
+			$rawPostData = file_get_contents('php://input');
 
-			if(!$jasonData = json_decode($rawPOSTData)) {
+			if (!$jsonData = json_decode($rawPostData)) {
+
 				$response = new Response();
 				$response->setHttpStatusCode(400);
 				$response->setSuccess(false);
@@ -383,24 +380,24 @@ elseif(empty($_GET)) {
 				exit;
 			}
 
-			if(!isset($jasonData->title) || !isset($jsonData->completed)) {// call jasondata obj and title
+			if (!isset($jsonData->title) || !isset($jsonData->completed)) {
 				$response = new Response();
 				$response->setHttpStatusCode(400);
 				$response->setSuccess(false);
-				(!isset($jasonData->title) ? $response->addMessage("Title field is mandatory and must be provided") : false);
-				(!isset($jasonData->completed) ? $response->addMessage("Completed field is mandatory and must be provided") : false);
+				(!isset($jsonData->title) ? $response->addMessage("Title field is mandatory and must be provided") : false);
+				(!isset($jsonData->completed) ? $response->addMessage("Completed field is mandatory and must be provided") : false);
 				$response->send();
 				exit;
 			}
 
-		$newTask = new Task(null, $jasonData->title, (isset($jasonData->description) ? $jasonData->description : null), (isset($jasonData->deadline) ? $jasonData->deadline : null), $jasonData->completed);
+		$newTask = new Task(null, $jsonData->title, (isset($jsonData->description) ? $jsonData->description : null), (isset($jsonData->deadline) ? $jsonData->deadline : null), $jsonData->completed);
 
 		$title = $newTask->getTitle();
 		$description = $newTask->getDescription();
 		$deadline = $newTask->getDeadline();
 		$completed = $newTask->getCompleted();
 
-		$query = $writeDB->prepare('insert into tbltasks (title, description, deadline, completed) values (:title, :description, STR_TO_DATE(:deadline, \'%d%m%Y %H:%i\'), :completed)');
+		$query = $writeDB->prepare('insert into tbltasks (title, description, deadline, completed) values (:title, :description, STR_TO_DATE(:deadline, \'%d/%m/%Y %H:%i\'), :completed)');
 		$query->bindParam(':title', $title, PDO::PARAM_STR);
 		$query->bindParam(':description', $description, PDO::PARAM_STR);
 		$query->bindParam(':deadline', $deadline, PDO::PARAM_STR);
@@ -409,7 +406,8 @@ elseif(empty($_GET)) {
 
 		$rowCount = $query->rowCount();
 
-		if($rowCount === 0) {
+		if ($rowCount === 0) {
+
 			$response = new Response();
 			$response->setHttpStatusCode(500);
 			$response->setSuccess(false);
@@ -420,13 +418,14 @@ elseif(empty($_GET)) {
 
 		$lastTaskID = $writeDB->lastInsertId();
 
-		$query = $writeDB->prepare('select id, title, description, DATE_FORMAT(deadline, "%d/%m/%Y %H:%i") as deadline, completed from tbltasks where id = :taskid');
+		$query = $writeDB->prepare('SELECT id, title, description, DATE_FORMAT(deadline, "%d/%m/%Y %H:%i") as deadline, completed from tbltasks where id = :taskid');
 		$query->bindParam(':taskid', $lastTaskID, PDO::PARAM_INT);
 		$query->execute();
 
 		$rowCount = $query->rowCount();
 
-		if($rowCount === 0) {
+		if ($rowCount === 0) {
+
 			$response = new Response();
 			$response->setHttpStatusCode(500);
 			$response->setSuccess(false);
@@ -437,13 +436,15 @@ elseif(empty($_GET)) {
 
 		$taskArray = array();
 
-		while($row = $query->fetch(PDO::FETCH_ASSOC)) {
+		while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
+
 			$task = new Task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
+
 			$taskArray[] = $task->returnTaskAsArray();
 		}
 
 		$returnData = array();
-		$returnData['rows_return'] = $rowCount;
+		$returnData['rows_returned'] = $rowCount;
 		$returnData['tasks'] = $taskArray;
 
 		$response = new Response();
@@ -455,7 +456,7 @@ elseif(empty($_GET)) {
 		exit;
 		}
 
-		catch(TaskException $ex) {
+		catch (TaskException $ex) {
 			$response = new Response();
 			$response->setHttpStatusCode(400);
 			$response->setSuccess(false);
@@ -463,8 +464,9 @@ elseif(empty($_GET)) {
 			$response->send();
 			exit;
 		}
-		catch(PDOException $ex) {
-			error_log("Database query error - ".$ex, 0);
+
+		catch (PDOException $ex) {
+			error_log("Database Query Error: ".$ex, 0);
 			$response = new Response();
 			$response->setHttpStatusCode(500);
 			$response->setSuccess(false);
