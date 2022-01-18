@@ -124,6 +124,89 @@ if (array_key_exists("taskid", $_GET)) {
 
 	}
 	elseif ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
+
+		try {
+
+			if($_SERVER['CONTENT_TYPE'] !== 'application/json') {
+				$response = new Response();
+				$response->setHttpStatusCode(400);
+				$response->setSuccess(false);
+				$response->addMessage("Content Type header not set to JSON");
+				$response->send();
+				exit;
+			}
+
+			$rawPatchData = file_get_contents('php://input');
+
+			if (!$jsonData = json_decode($rawPatchData)) {
+				$response = new Response();
+				$response->setHttpStatusCode(400);
+				$response->setSuccess(false);
+				$response->addMessage("Request body is not valid JSON");
+				$response->send();
+				exit;
+			}
+
+			$title_updated = false;
+			$description_updated = false;
+			$deadline_updated = false;
+			$completed_updated = false;
+
+			$queryFields = "";
+
+			if (isset($jsonData->title)) {
+				$title_updated = true;
+				$queryFields .= "title = :title, ";
+			}
+
+			if(isset($jsonData->description)) {
+				$description_updated = true;
+				$queryFields .= "description = :description, ";
+			}
+
+			if (isset($jsonData->deadline)) {
+				$deadline_updated = true;
+				$queryFields .= "deadline = STR_TO_DATE(:deadline, '%d/%m/%Y %H:%i'), ";
+			}
+
+			if(isset($jsonData->completed)) {
+				$completed_updated = true;
+				$queryFields .= "completed =:completed, ";
+			}
+
+			$queryFields = rtrim($queryFields, ", ");
+
+			// update tbltasks set title = :title, description = :description where id =:taskid
+
+			if ($title_updated === false && $description_updated === false && $deadline_updated === false && $completed_updated === false) {
+				$response = new Response();
+				$response->setHttpStatusCode(400);
+				$response->setSuccess(false);
+				$response->addMessage("No task fields provided");
+				$response->send();
+				exit;
+			}
+
+			// update the task /tasks/7
+
+		}
+		catch(TaskException $ex) {
+			$response = new Response();
+			$response->setHttpStatusCode(400);
+			$response->setSuccess(false);
+			$response->addMessage($ex->getMessage());
+			$response->send();
+			exit;
+		}
+		catch(PDOException $ex) {
+			error_log("Database query error -".$ex, 0);
+			$response = new Response();
+			$response->setHttpStatusCode(500);
+			$response->setSuccess(false);
+			$response->addMessage("Failed to update task - check your data for errors");
+			$response->send();
+			exit;
+		}
 	}
 	else {
 		$response = new Response();
