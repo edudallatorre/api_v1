@@ -189,6 +189,27 @@ if (array_key_exists("taskid", $_GET)) {
 
 			// update the task /tasks/7
 
+			$query = $writeDB->prepare('select id, title, description, DATE_FORMAT(deadline, "%d/%m/%i") as deadline, completed from tbltasks where id = :taskid');
+			$query->bindParam(':taskid', $taskid, PDO::PARAM_INT);
+			$query->execute();
+
+			$rowCount = $query->rowCount();
+
+			if ($rowCount === 0) {
+				$response = new Response();
+				$response->setHttpStatusCode(404);
+				$response->setSuccess(false);
+				$response->addMessage("No task found to update");
+				$response->send();
+				exit;
+			}
+
+			while($row = $query->fetch(PDO::FETCH_ASSOC)) {
+				$task = new Task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
+			}
+
+			$queryString = "update tbltasks set " .$queryFields." where id = :taskid";
+			$query = $whiteDB->prepare($queryString);
 		}
 		catch(TaskException $ex) {
 			$response = new Response();
