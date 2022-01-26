@@ -15,7 +15,7 @@ catch (PDOException $ex) {
 	$response->setSuccess(false);
 	$response->addMessage("Database connection error");
 	$response->send();
-	exit();
+	exit;
 }
 
 if (array_key_exists("taskid", $_GET)) {
@@ -83,7 +83,7 @@ if (array_key_exists("taskid", $_GET)) {
 			$response->setSuccess(false);
 			$response->addMessage("Failed to get task");
 			$response->send();
-			exit();
+			exit;
 		}
 
 	}
@@ -210,6 +210,78 @@ if (array_key_exists("taskid", $_GET)) {
 
 			$queryString = "update tbltasks set " .$queryFields." where id = :taskid";
 			$query = $whiteDB->prepare($queryString);
+
+			if ($title_updated === true) {
+				$task->setTitle($jsonData->title);
+				$up_title = $task->getTitle();
+				$query->bindParam(':title', $up_title);
+			}
+
+			if ($description_updated === true) {
+				$task->setDescription($jsonData->description);
+				$up_description = $task->getDescription();
+				$query->bindParam(':description', $up_desctiption, PDO::PARAM_STR);
+			}
+
+			if ($deadline_updated === true) {
+				$task->setDeadline($jsonData->deadline);
+				$up_deadline = $task->getDeadline();
+				$query->bindParam(':deadline', $up_deadline, PDO::PARAM_STR);
+			}
+
+			if ($completed_updated === true) {
+				$task->setCompleted($jsonData->completed);
+				$up_completed = $task->getCompleted();
+				$query->bindParam(':completed', $up_completed, PDO::PARAM_STR);
+			}
+
+			$query->bindParam(':taskid', $taskid, PDO::PARAM_INT);
+			$query->execute();
+
+			$rowCount = $query->rowCount();
+
+			if ($rowCount === 0) {
+				$response = new Response();
+				$response->setHttpStatusCode(400);
+				$response->setSuccess(false);
+				$response->addMessage("Task not updated");
+				$response->send();
+				exit;
+			}
+
+			$query = $writeDB->prepare('select id, title, description, DATE_FORMAT(deadline "%d/%m/%Y %H:%i") as deadline, completed from tbltasks where id = :taskid)');
+			$query->bindParam(':taskid', $taskid, PDO::PARAM_INT);
+			$query->execute();
+
+			$rowCount = $query->$rowCount();
+
+			if ($rowCount === 0) {
+				$response = new Response();
+				$response->setHttpStatusCode(400);
+				$response->setSuccess(false);
+				$response->addMessage("No task found after update");
+				$response->send();
+				exit;
+			}
+
+			$taskArray = array();
+
+			while($row = $query->fetch(PDO::FETCH_ASSOC)) {
+				$task = new Task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
+				$taskArray[] = $task->returnTaskAsArray();
+			}
+
+			$returnData = array();
+			$returnData['rows_returned'] = $rowCount;
+			$returnData['tasks'] = $taskArray;
+
+			$response = new Response();
+			$response->setHttpStatusCode(200);
+			$response->setSuccess(true);
+			$response->addMessage("Task updated");
+			$response->setData($returnData);
+			$response->send();
+			exit;
 		}
 		catch(TaskException $ex) {
 			$response = new Response();
