@@ -1,7 +1,7 @@
 <?php
 
 require_once('db.php');
-require_once('../model/Response.php');
+require_once('../model/response.php');
 
 try {
 	$writeDB = DB::connectWriteDB();

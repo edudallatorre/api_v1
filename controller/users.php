@@ -63,10 +63,10 @@ if (strlen($jsonData->fullname) < 1 || strlen($jsonData->fullname) > 255 || strl
 	$response->setSuccess(false);
 	(!isset($jsonData->fullname) < 1 ? $response->addMessage("Full name cannot be blank") : false);
 	(!isset($jsonData->fullname) > 255 ? $response->addMessage("Full name cannot be greater than 255 characters") : false);
-	(!isset($jsonData->username) < 1 ? $response->addMessage("Full name cannot be blank") : false);
-	(!isset($jsonData->username) > 255 ? $response->addMessage("Full name cannot be greater than 255 characters") : false);
-	(!isset($jsonData->password) < 1 ? $response->addMessage("Full name cannot be blank") : false);
-	(!isset($jsonData->password) > 255 ? $response->addMessage("Full name cannot be greater than 255 characters") : false);
+	(!isset($jsonData->username) < 1 ? $response->addMessage("Username cannot be blank") : false);
+	(!isset($jsonData->username) > 255 ? $response->addMessage("Username cannot be greater than 255 characters") : false);
+	(!isset($jsonData->password) < 1 ? $response->addMessage("Password cannot be blank") : false);
+	(!isset($jsonData->password) > 255 ? $response->addMessage("Password cannot be greater than 255 characters") : false);
 	$response->send();
 	exit;
 }
@@ -77,8 +77,55 @@ $password = $jsonData->password;
 
 try {
 
-	$query = $writeDB->prepare('select id from tblusers');
+	$query = $writeDB->prepare('select id from tblusers where username = :username');
+	$query->bindParam(':username', $username, PDO::PARAM_STR);
+	$query->execute();
+
+	$rowCount = $query->rowCount();
+
+	if ($rowCount !== 0) {
+		$response = new Response();
+		$response->setHttpStatusCode(409);
+		$response->setSuccess(false);
+		$response->addMessage("Username already exists");
+		$response->send();
+		exit;
+	}
+
+	$hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+	$query = $writeDB->prepare('insert into tblusers (fullname, username, password) values (:fullname, :username, :password)');
+	$query->bindParam(':fullname', $fullname, PDO::PARAM_STR);
+	$query->bindParam(':username', $username, PDO::PARAM_STR);
+	$query->bindParam(':password', $hashed_password, PDO::PARAM_STR);
+
+	$rowCount = $query->rowCount();
+
+	// if ($rowCount === 0) {
+	// 	$response = new Response();
+	// 	$response->setHttpStatusCode(500);
+	// 	$response->setSuccess(false);
+	// 	$response->addMessage("There was an issue creating a user account - please try again.");
+	// 	exit;
+	// }
+
+	$lastUserID = $writeDB->lastInsertId();
+
+	echo 'Last Insert ID: '.$lastUserID;
+
+	$returnData = array();
+	$returnData['id_user'] = $lastUserID;
+	$returnData['fullname'] = $fullname;
+	$returnData['username'] = $username;
 	
+	$response = new Response();
+	$response->setHttpStatusCode(201);
+	$response->setSuccess(true);
+	$response->addMessage("User created");
+	$response->setData($returnData);
+	$response->send();
+	exit;
+
 } catch (PDOException $ex) {
 	error_log("Database query error " . $ex, 0);
 	$response = new Response();
