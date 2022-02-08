@@ -57,7 +57,7 @@ if (!isset($jsonData->fullname) || !isset($jsonData->username) || !isset($jsonDa
 	exit;
 }
 
-if (strlen($jsonData->fullname) < 1 || strlen($jsonData->fullname) > 255 || strlen($jsonData->username) < 1 || strlen($jsonData->username) > 255 || strlen($jsonData->password) < 1 || strlen($jsonData->password) > 255) {
+if (strlen($jsonData->fullname) < 1 || strlen($jsonData->fullname) > 255 || strlen($jsonData->username) < 1 || strlen($jsonData->username) > 255 || strlen($jsonData->password) < 1 || strlen($jsonData->password) > 100) {
 	$response = new Response();
 	$response->setHttpStatusCode(400);
 	$response->setSuccess(false);
@@ -66,7 +66,7 @@ if (strlen($jsonData->fullname) < 1 || strlen($jsonData->fullname) > 255 || strl
 	(!isset($jsonData->username) < 1 ? $response->addMessage("Username cannot be blank") : false);
 	(!isset($jsonData->username) > 255 ? $response->addMessage("Username cannot be greater than 255 characters") : false);
 	(!isset($jsonData->password) < 1 ? $response->addMessage("Password cannot be blank") : false);
-	(!isset($jsonData->password) > 255 ? $response->addMessage("Password cannot be greater than 255 characters") : false);
+	(!isset($jsonData->password) > 100 ? $response->addMessage("Password cannot be greater than 255 characters") : false);
 	$response->send();
 	exit;
 }
@@ -94,27 +94,27 @@ try {
 
 	$hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-	$query = $writeDB->prepare('insert into tblusers (fullname, username, password) values (:fullname, :username, :password)');
+	$query = $writeDB->prepare('INSERT into tblusers (fullname, username, password) values (:fullname, :username, :password)');
 	$query->bindParam(':fullname', $fullname, PDO::PARAM_STR);
 	$query->bindParam(':username', $username, PDO::PARAM_STR);
 	$query->bindParam(':password', $hashed_password, PDO::PARAM_STR);
+	$query->execute();
 
 	$rowCount = $query->rowCount();
 
-	// if ($rowCount === 0) {
-	// 	$response = new Response();
-	// 	$response->setHttpStatusCode(500);
-	// 	$response->setSuccess(false);
-	// 	$response->addMessage("There was an issue creating a user account - please try again.");
-	// 	exit;
-	// }
+	if ($rowCount === 0) {
+		$response = new Response();
+		$response->setHttpStatusCode(500);
+		$response->setSuccess(false);
+		$response->addMessage("There was an issue creating a user account - please try again.");
+		$response->send();
+		exit;
+	}
 
 	$lastUserID = $writeDB->lastInsertId();
 
-	echo 'Last Insert ID: '.$lastUserID;
-
 	$returnData = array();
-	$returnData['id_user'] = $lastUserID;
+	$returnData['user_id'] = $lastUserID;
 	$returnData['fullname'] = $fullname;
 	$returnData['username'] = $username;
 	
@@ -132,6 +132,7 @@ try {
 	$response->setHttpStatusCode(500);
 	$response->setSuccess(false);
 	$response->addMessage("There was an issue creating a user account - please try again.");
+	$response->send();
 	exit;
 }
 
