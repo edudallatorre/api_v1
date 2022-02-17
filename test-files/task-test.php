@@ -1,6 +1,6 @@
 <?php
 
-require_once('Task.php');
+require_once('task.php');
 
 try {
 	$task = new Task(1, "Title Here", "Description Here", "15/07/2021 09:06", "N");
