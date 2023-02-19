@@ -50,7 +50,7 @@ if (array_key_exists("taskid", $_GET)) {
 			}
 
 			while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
-				$task = new Task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
+				$task = new task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
 				$taskArray[] = $task->returnTaskAsArray();
 			}
 
@@ -203,7 +203,7 @@ if (array_key_exists("taskid", $_GET)) {
 			}
 
 			while($row = $query->fetch(PDO::FETCH_ASSOC)) {
-				$task = new Task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
+				$task = new task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
 			}
 
 			$queryString = "update tbltasks set " .$queryFields." where id = :taskid";
@@ -264,7 +264,7 @@ if (array_key_exists("taskid", $_GET)) {
 			$taskArray = array();
 
 			while($row = $query->fetch(PDO::FETCH_ASSOC)) {
-				$task = new Task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
+				$task = new task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
 				$taskArray[] = $task->returnTaskAsArray();
 			}
 			$returnData = array();
@@ -333,7 +333,7 @@ elseif (array_key_exists("completed", $_GET)) {
 
 			while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
 
-				$task = new Task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
+				$task = new task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
 				$taskArray[] = $task->returnTaskAsArray();
 			}
 
@@ -427,7 +427,7 @@ elseif (array_key_exists("page", $_GET)) {
 			$taskArray = array();
 
 			while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
-				$task = new Task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
+				$task = new task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
 
 				$taskArray[] = $task->returnTaskAsArray();
 
@@ -492,7 +492,7 @@ elseif (empty($_GET)) {
 
 			while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
 
-				$task = new Task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
+				$task = new task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
 				$taskArray[] = $task->returnTaskAsArray();
 			}
 
@@ -562,7 +562,7 @@ elseif (empty($_GET)) {
 				exit;
 			}
 
-		$newTask = new Task(null, $jsonData->title, (isset($jsonData->description) ? $jsonData->description : null), (isset($jsonData->deadline) ? $jsonData->deadline : null), $jsonData->completed);
+		$newTask = new task(null, $jsonData->title, (isset($jsonData->description) ? $jsonData->description : null), (isset($jsonData->deadline) ? $jsonData->deadline : null), $jsonData->completed);
 
 		$title = $newTask->getTitle();
 		$description = $newTask->getDescription();
@@ -610,7 +610,7 @@ elseif (empty($_GET)) {
 
 		while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
 
-			$task = new Task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
+			$task = new task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
 
 			$taskArray[] = $task->returnTaskAsArray();
 		}

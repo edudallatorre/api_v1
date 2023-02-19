@@ -1,4 +1,4 @@
-<?php
+<?php 
 // Task Model Object
 
 // empty TaskException class so we can catch task errors
@@ -9,7 +9,7 @@ class Task {
 	private $_id;
 	private $_title;
 	private $_description;
-	private $_deadline;
+	private $_deadline;	
 	private $_completed;
 
 	public function __construct($id, $title, $description, $deadline, $completed) {
@@ -19,7 +19,6 @@ class Task {
 		$this->setDeadline($deadline);
 		$this->setCompleted($completed);
 	}
-
 
 	public function getID() {
 		return $this->_id;
@@ -42,48 +41,38 @@ class Task {
 	}
 
 	public function setID($id) {
-
 		if(($id !== null) && (!is_numeric($id) || $id <= 0 || $id > 9223372036854775807 || $this->_id !== null)) {
-			throw new TaskException("Task ID error");
+			throw new taskException("Task ID error");
 		}
-
 		$this->_id = $id;
-
 	}
 
 	public function setTitle($title) {
-
-		if(strlen($title) < 0 || strlen($title) > 255) {
-			throw new TaskException("Task title error");
+		if(strlen($title) < 1 || strlen($title) > 255) {
+			throw new taskException("Task title error");
 		}
-
 		$this->_title = $title;
 	}
 
 	public function setDescription($description) {
-
-		if(($description !== null) && (strlen($description) > 16777215)) {
-			throw new TaskException("Task description error");
+		if(($description !== null) && (strlen($description) == 0 || strlen($description) > 16777215)) {
+			throw new taskException("Task description error");
 		}
-
 		$this->_description = $description;
 	}
 
 	public function setDeadline($deadline) {
-		if(($deadline !== null) && date_format(date_create_from_format('d/m/Y H:i', $deadline), 'd/m/Y H:i') != $deadline) {
-			throw new TaskException("Task deadline date time error");
-		}
-
-		$this->_deadline = $deadline;
+		if(($deadline !== null) && !date_create_from_format('d/m/Y H:i', $deadline) || date_format(date_create_from_format('d/m/Y H:i', $deadline), 'd/m/Y H:i') != $deadline) {
+			throw new taskException("Task deadline date and time error");
+	  }
+	  $this->_deadline = $deadline;
 	}
 
 	public function setCompleted($completed) {
-
 		if(strtoupper($completed) !== 'Y' && strtoupper($completed) !== 'N') {
-			throw new TaskException("Task completed must be Y or N");
+			throw new taskException("Task completed is not Y or N");
 		}
-
-		$this->_completed = $completed;
+		$this->_completed = strtoupper($completed);
 	}
 
 	public function returnTaskAsArray() {
@@ -95,6 +84,5 @@ class Task {
 		$task['completed'] = $this->getCompleted();
 		return $task;
 	}
-
-
+  
 }
