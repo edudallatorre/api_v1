@@ -25,12 +25,12 @@ if (array_key_exists("sessionid",$_GET)) {
     $response = new Response();
     $response->setHttpStatusCode(400);
     $response->setSuccess(false);
-    ($sessionid === '' ? $response->addMessage("Session ID cannot be blank") : false);
+    ($sessionid == '' ? $response->addMessage("Session ID cannot be blank") : false);
     (!is_numeric($sessionid) ? $response->addMessage("Session ID must be numeric") : false);
     $response->send();
     exit;
   }
-
+  
   if(!isset($_SERVER['HTTP_AUTHORIZATION']) || strlen($_SERVER['HTTP_AUTHORIZATION']) < 1)
   {
     $response = new Response();
@@ -43,7 +43,7 @@ if (array_key_exists("sessionid",$_GET)) {
   }
   
   $accesstoken = $_SERVER['HTTP_AUTHORIZATION'];
-  
+
   if($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     try {
       $query = $writeDB->prepare('delete from tblsessions where id = :sessionid and accesstoken = :accesstoken');
@@ -61,14 +61,13 @@ if (array_key_exists("sessionid",$_GET)) {
         $response->send();
         exit;
       }
-      
+
       $returnData = array();
       $returnData['session_id'] = intval($sessionid);
 
       $response = new Response();
       $response->setHttpStatusCode(200);
       $response->setSuccess(true);
-      $response->addMessage("Logged out");
       $response->setData($returnData);
       $response->send();
       exit;
@@ -82,8 +81,9 @@ if (array_key_exists("sessionid",$_GET)) {
       exit;
     }
   }
+
   elseif($_SERVER['REQUEST_METHOD'] === 'PATCH') {
-    
+
     if($_SERVER['CONTENT_TYPE'] !== 'application/json') {
       $response = new Response();
       $response->setHttpStatusCode(400);
@@ -113,7 +113,7 @@ if (array_key_exists("sessionid",$_GET)) {
       $response->send();
       exit;
     }
-    
+
     try {
       
       $refreshtoken = $jsonData->refresh_token;
@@ -242,7 +242,7 @@ if (array_key_exists("sessionid",$_GET)) {
     $response->send();
     exit;
   }
-
+  
   sleep(1);
 
   if ($_SERVER['CONTENT_TYPE'] !== 'application/json') {
@@ -265,7 +265,8 @@ if (array_key_exists("sessionid",$_GET)) {
     exit;
   }
 
-  if (!isset($jsonData->username) || !isset($jsonData->password)) {
+  // check if post request contains username and password in body as they are mandatory
+  if(!isset($jsonData->username) || !isset($jsonData->password)) {
     $response = new Response();
     $response->setHttpStatusCode(400);
     $response->setSuccess(false);
@@ -285,7 +286,7 @@ if (array_key_exists("sessionid",$_GET)) {
     (strlen($jsonData->password) > 255 ? $response->addMessage("Password must be less than 255 characters") : false);
     $response->send();
     exit;
-  } 
+  }
   try {
     $username = $jsonData->username;
     $password = $jsonData->password;
@@ -313,7 +314,7 @@ if (array_key_exists("sessionid",$_GET)) {
     $returned_useractive = $row['useractive'];
     $returned_loginattempts = $row['loginattempts'];
 
-    if ($returned_useractive !== 'Y') {
+    if ($returned_useractive != 'Y') {
       $response = new Response();
       $response->setHttpStatusCode(401);
       $response->setSuccess(false);
@@ -376,9 +377,9 @@ if (array_key_exists("sessionid",$_GET)) {
     $query->bindParam(':refreshtokenexpiryseconds', $refresh_token_expiry_seconds, PDO::PARAM_INT);
 
     $query->execute();
-    
+
     $lastSessionID = $writeDB->lastInsertId();
-    
+
     $writeDB->commit();
 
     $returnData = array();
@@ -404,7 +405,7 @@ if (array_key_exists("sessionid",$_GET)) {
     $response->send();
     exit;
   }
-} 
+}
 
 else {
   $response = new Response();
